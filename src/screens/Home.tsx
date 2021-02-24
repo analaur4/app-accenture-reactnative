@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { RectButton } from 'react-native-gesture-handler';
@@ -6,54 +6,73 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import PinInsert from '../images/Pin.png';
+import { IInicialMarker, IAllUnits } from '../interfaces';
+import { getData } from '../services/index';
 
 export default function Home() {
 
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
-    function handlePageDetails() {
-        navigation.navigate('accenture')
-    }
+  const [allUnits, setAllUnits] = useState<IAllUnits[]>([])
+  const [initialMapMarker, setInicialMapMarker] = useState<IInicialMarker>({
+    latitude: -23.628949249999998,
+    longitude: -46.71006813701569,
+    latitudeDelta: 0.0008,
+    longitudeDelta: 0.0008
+  })
 
-    return (
-        <View style={styles.container}>
-            <MapView style={styles.map} 
-                provider={PROVIDER_GOOGLE} 
-                initialRegion={{
-                latitude: -23.597450,
-                longitude: -46.686960,
-                latitudeDelta: 0.0008,
-                longitudeDelta: 0.0008
-                }}
+  useEffect(() => {
+    getData.get('/all').then(resp => {
+      setAllUnits(resp.data)
+    })
+  }, [])
+
+  navigator.geolocation.getCurrentPosition(position => {
+    const lat = position.coords.latitude
+    const long = position.coords.longitude
+  })
+
+  function handlePageDetails(id: number) {
+    navigation.navigate('accenture', { id })
+  }
+
+  return (
+    <View style={styles.container}>
+      <MapView style={styles.map} 
+        provider={PROVIDER_GOOGLE} 
+        initialRegion={initialMapMarker}
+      >
+        { allUnits.map(unit => (
+          <View key={ unit.id }>
+            <Marker
+              icon={ PinInsert }
+              coordinate={{
+                latitude: unit.latitude,
+                longitude: unit.longitude
+              }}
             >
-                
-                <Marker
-                    icon={ PinInsert }
-                    coordinate={{
-                        latitude: -23.597450,
-                        longitude: -46.686960
-                    }}
-                >
-                <Callout
-                    tooltip={true}
-                    onPress={ handlePageDetails }  
-                >
-                    <View style={styles.calloutContainer}>
-                    <Text style={styles.calloutText}>Aqui estou</Text>
-                    </View>
+              <Callout
+                tooltip={true}
+                onPress={ () => handlePageDetails(unit.id) }  
+              >
+                <View style={styles.calloutContainer}>
+                <Text style={styles.calloutText}>{ unit.name }</Text>
+                </View>
+              </Callout>
+            </Marker>
 
-                </Callout>
-                </Marker>
-            </MapView>
-            
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>Search</Text>
-                <RectButton style={styles.findButton}>
-                <Feather name="search" size={20} color={"#FFF"} />
-                </RectButton>
-            </View>
-        </View>
-    )
+          </View>
+        )) }
+      </MapView>
+        
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Search</Text>
+        <RectButton style={styles.findButton}>
+        <Feather name="search" size={20} color={"#FFF"} />
+        </RectButton>
+      </View>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({

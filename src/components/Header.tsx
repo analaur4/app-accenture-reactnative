@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 
-import HeaderProps from '../interfaces';
+import { HeaderProps } from '../interfaces';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Header({ title, showCancel = true }: HeaderProps) {
@@ -13,8 +13,6 @@ export default function Header({ title, showCancel = true }: HeaderProps) {
     function handleClose() {
         navigation.navigate('home')
     }
-
-
 
     return (
         <View style={styles.container}>
@@ -42,13 +40,14 @@ export default function Header({ title, showCancel = true }: HeaderProps) {
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: 'center',
+        alignItems: 'flex-end',
         backgroundColor: '#F9FAFC',
         borderBottomWidth: 1,
         borderColor: '#DDE',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 44
+        padding: 44,
+        height: 120
     },
     title: {
         color: '#797979',
